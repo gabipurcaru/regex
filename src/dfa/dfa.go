@@ -80,7 +80,6 @@ func (d *DFA) Check(word string) bool {
 
 // Prints the DFA, using the same format it uses to read it
 func (d *DFA) Print(w io.Writer) {
-	fmt.Printf("\n\n\n\n\nAAA\n\n\n\n")
 	fmt.Fprintf(w, "%d %d\n", d.NumStates, d.NumTransitions)
 	for i := 1; i <= d.NumStates; i++ {
 		for character, nodes := range d.Graph[i] {
@@ -164,6 +163,7 @@ func (d *DFA) Minimize() {
 
 	// Moore's Algorithm
 	// See http://en.wikipedia.org/wiki/DFA_minimization#Moore.27s_algorithm
+	// NOT WORKING CORRECTLY!!!
 	is_final := make([]bool, d.NumStates+1)
 	renames := make(map[int]int)
 	for i := 1; i <= d.NumStates; i++ {
@@ -201,21 +201,23 @@ func (d *DFA) Minimize() {
 					obsolete := 0
 					used := 0
 					if renames[i] > renames[j] {
-						obsolete, used = i, j
+						obsolete, used = renames[i], renames[j]
 						renames[i] = renames[j]
-						if !to_remove[i] {
-							to_remove[i] = true
-							nodes_removed++
-						}
 					} else {
-						obsolete, used = j, i
+						obsolete, used = renames[j], renames[i]
 						renames[j] = renames[i]
-						if !to_remove[j] {
-							to_remove[j] = true
-							nodes_removed++
-						}
+					}
+					if !to_remove[obsolete] {
+						to_remove[obsolete] = true
+						nodes_removed++
 					}
 					for color, nodes := range d.Graph[obsolete] {
+						if _, ok := d.Graph[used]; !ok {
+							d.Graph[used] = make(map[rune][]int)
+						}
+						if _, ok := d.Graph[used][color]; !ok {
+							d.Graph[used][color] = make([]int, 1)
+						}
 						d.Graph[used][color][0] = renames[nodes[0]]
 					}
 					renames[obsolete] = renames[used]

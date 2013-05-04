@@ -58,10 +58,10 @@ func TestConcat(t *testing.T) {
 	res := Concat(nfa, nfa)
 	// res.Print(os.Stdout)
 
-	if res.NumStates != 2*nfa.NumStates {
+	if res.NumStates != 2*nfa.NumStates+1 {
 		t.Errorf("Incorrect number of states")
 	}
-	if res.NumTransitions != 2*nfa.NumTransitions+len(nfa.FinalStates) {
+	if res.NumTransitions != 2*nfa.NumTransitions+len(nfa.FinalStates)+1 {
 		t.Errorf("Incorrect number of transitions")
 	}
 }

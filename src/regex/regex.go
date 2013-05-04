@@ -1,18 +1,14 @@
 package regex
 
 import (
-	"fmt"
 	"nfa"
-    // "os"
 )
 
 func RegexToNFA(re string) nfa.NFA {
 	if len(re) == 0 {
-		fmt.Printf("EMPTY STRING\n")
 		return nfa.New()
 	}
 	if re[0] == '(' && re[len(re)-1] == ')' {
-		fmt.Printf("ENCLOSED BY PARENS: %s\n", re)
 		return RegexToNFA(re[1 : len(re)-1])
 	}
 	first_star_pos := -1
@@ -40,7 +36,6 @@ func RegexToNFA(re string) nfa.NFA {
 	if first_pipe_pos != -1 && first_pipe_nesting == 0 {
 		n1 := RegexToNFA(re[0:first_pipe_pos])
 		n2 := RegexToNFA(re[first_pipe_pos+1:])
-		fmt.Printf("PIPE: %s <--> %s\n", re[0:first_pipe_pos], re[first_pipe_pos+1:])
 		return nfa.Either(n1, n2)
 	} else if first_star_pos != -1 && first_star_nesting == 0 {
 		i := 0
@@ -69,7 +64,9 @@ func RegexToNFA(re string) nfa.NFA {
 			res = nfa.Star(RegexToNFA(re[i:first_star_pos]))
 		}
 		if len(re[first_star_pos+1:]) > 0 {
-			res = nfa.Concat(res, RegexToNFA(re[first_star_pos+1:]))
+			n2 := RegexToNFA(re[first_star_pos+1:])
+
+			res = nfa.Concat(res, n2)
 		}
 		return res
 	} else {
@@ -77,7 +74,7 @@ func RegexToNFA(re string) nfa.NFA {
 			nesting = 1
 			i := 1
 			for ; ; i++ {
-    				if re[i] == '(' {
+				if re[i] == '(' {
 					nesting++
 				} else if re[i] == ')' {
 					nesting--
@@ -86,7 +83,6 @@ func RegexToNFA(re string) nfa.NFA {
 					}
 				}
 			}
-			fmt.Printf("PAREN: %s <--> %s\n", re[1:i], re[i+1:])
 			return nfa.Concat(RegexToNFA(re[1:i]), RegexToNFA(re[i+1:]))
 		} else {
 			res := nfa.New()
@@ -97,7 +93,6 @@ func RegexToNFA(re string) nfa.NFA {
 			for pos, char := range re {
 				if char == '(' {
 					res.FinalStates = []int{node}
-					fmt.Printf("PAREN2: %s <--> %s\n", re[:pos], re[pos:])
 					return nfa.Concat(res, RegexToNFA(re[pos:]))
 				}
 				res.Graph[node] = map[rune][]int{char: []int{node + 1}}
@@ -106,10 +101,6 @@ func RegexToNFA(re string) nfa.NFA {
 				node++
 			}
 			res.FinalStates = []int{node}
-			fmt.Printf("REGULAR: %s\n", re)
-            // fmt.Printf("\n>>\n")
-            // res.Print(os.Stdout)
-            // fmt.Printf("\n<<\n")
 			return res
 		}
 	}

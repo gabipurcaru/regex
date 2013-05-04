@@ -12,5 +12,8 @@ func main() {
 	fmt.Scanf("%s", &re)
 	fmt.Scanf("%s", &word)
 	nfa := regex.RegexToNFA(re)
+	nfa.ToDFA()
+	fmt.Printf("%v", nfa.Check(word))
+	fmt.Printf("\n")
 	nfa.Print(os.Stdout)
 }
