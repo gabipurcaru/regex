@@ -107,11 +107,11 @@ func (d *DFA) IsFinal(state int) bool {
 
 // Returns true if there isn't a word that takes this state into a final ones
 func (d *DFA) IsReverseUnreachable(state int) bool {
-	if len(d.Graph[state]) == 0 {
-		return true
-	}
 	if d.IsFinal(state) {
 		return false
+	}
+	if len(d.Graph[state]) == 0 {
+		return true
 	}
 	q := queue.New(d.NumStates)
 	viz := make([]bool, d.NumStates+1)
@@ -127,6 +127,22 @@ func (d *DFA) IsReverseUnreachable(state int) bool {
 			}
 			viz[neighbours[0]] = true
 			q.Push(neighbours[0])
+		}
+	}
+	return true
+}
+
+func nodes_match(graph map[int]map[rune][]int, is_final []bool, node1, node2 int) bool {
+	// perform a simultaneous BFS from the two nodes; if there is a string
+	// that matches from node1 but not from node2 or the other way around,
+	// the two nodes don't match
+	// q := queue.New(1)
+	if len(graph[node1]) != len(graph[node2]) {
+		return false
+	}
+	for color, neighbours := range graph[node1] {
+		if neighbours2, ok := graph[node2][color]; !ok || is_final[neighbours[0]] != is_final[neighbours2[0]] {
+			return false
 		}
 	}
 	return true
@@ -163,7 +179,6 @@ func (d *DFA) Minimize() {
 
 	// Moore's Algorithm
 	// See http://en.wikipedia.org/wiki/DFA_minimization#Moore.27s_algorithm
-	// NOT WORKING CORRECTLY!!!
 	is_final := make([]bool, d.NumStates+1)
 	renames := make(map[int]int)
 	for i := 1; i <= d.NumStates; i++ {
@@ -188,14 +203,7 @@ func (d *DFA) Minimize() {
 					is_final[renames[j]] && !is_final[renames[i]] {
 					continue
 				}
-				match := true
-				for character, nodes := range old_graph[i] {
-					nodes2, ok := old_graph[j][character]
-					if !ok || renames[nodes2[0]] != renames[nodes[0]] {
-						match = false
-						break
-					}
-				}
+				match := nodes_match(old_graph, is_final, i, j)
 				if match {
 					// join states i and j
 					obsolete := 0
@@ -211,14 +219,16 @@ func (d *DFA) Minimize() {
 						to_remove[obsolete] = true
 						nodes_removed++
 					}
-					for color, nodes := range d.Graph[obsolete] {
+					for character, nodes := range d.Graph[obsolete] {
 						if _, ok := d.Graph[used]; !ok {
 							d.Graph[used] = make(map[rune][]int)
 						}
-						if _, ok := d.Graph[used][color]; !ok {
-							d.Graph[used][color] = make([]int, 1)
+						if _, ok := d.Graph[used][character]; !ok {
+							d.Graph[used][character] = make([]int, 1)
+						} else {
+							transitions_removed ++
 						}
-						d.Graph[used][color][0] = renames[nodes[0]]
+						d.Graph[used][character][0] = renames[nodes[0]]
 					}
 					renames[obsolete] = renames[used]
 					found_match = true
@@ -235,6 +245,9 @@ func (d *DFA) Minimize() {
 				d.Graph[i][color][0] = renames[d.Graph[i][color][0]]
 			}
 		}
+	}
+	for d.EntryState != renames[d.EntryState] {
+		d.EntryState = renames[d.EntryState]
 	}
 
 	// rename states so that there are no gaps between them
@@ -255,19 +268,9 @@ func (d *DFA) Minimize() {
 	}
 	d.FinalStates = final_states
 
-	// remove/rename the states found
+	// rename the states found
 	for node, _ := range d.Graph {
-		if to_remove[node] {
-			transitions_removed += len(d.Graph[node])
-			delete(d.Graph, node)
-			continue
-		}
-		for character, neighbours := range d.Graph[node] {
-			if to_remove[neighbours[0]] {
-				transitions_removed += len(d.Graph[node][character])
-				delete(d.Graph[node], character)
-				continue
-			}
+		for character, _ := range d.Graph[node] {
 			d.Graph[node][character][0] = mapping[d.Graph[node][character][0]]
 		}
 	}
@@ -278,9 +281,6 @@ func (d *DFA) Minimize() {
 			continue
 		}
 		d.Graph[mapping[id]] = d.Graph[id]
-		if mapping[id] != id {
-			delete(d.Graph, id)
-		}
 	}
 	d.NumStates -= nodes_removed
 	d.NumTransitions -= transitions_removed

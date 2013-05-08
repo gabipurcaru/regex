@@ -13,6 +13,7 @@ func main() {
 	fmt.Scanf("%s", &word)
 	nfa := regex.RegexToNFA(re)
 	nfa.ToDFA()
+	nfa.Minimize()
 	fmt.Printf("%v", nfa.Check(word))
 	fmt.Printf("\n")
 	nfa.Print(os.Stdout)
