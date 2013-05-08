@@ -22,10 +22,10 @@ func Copy(n NFA) NFA {
 	copy(res.FinalStates, n.FinalStates)
 	for node, _ := range n.Graph {
 		res.Graph[node] = make(map[rune][]int)
-		for color, _ := range n.Graph[node] {
-			res.Graph[node][color] = make([]int, 0, len(n.Graph[node][color]))
-			for _, neighbour := range n.Graph[node][color] {
-				res.Graph[node][color] = append(res.Graph[node][color], neighbour)
+		for character, _ := range n.Graph[node] {
+			res.Graph[node][character] = make([]int, 0, len(n.Graph[node][character]))
+			for _, neighbour := range n.Graph[node][character] {
+				res.Graph[node][character] = append(res.Graph[node][character], neighbour)
 			}
 		}
 	}
@@ -48,16 +48,16 @@ func Concat(n1 NFA, n2 NFA) (n3 NFA) {
 	}
 	n3.Graph = n1.Graph
 	for node, _ := range n2.Graph {
-		for color, _ := range n2.Graph[node] {
-			for _, neighbour := range n2.Graph[node][color] {
+		for character, _ := range n2.Graph[node] {
+			for _, neighbour := range n2.Graph[node][character] {
 				if _, ok := n3.Graph[node+offset]; !ok {
 					n3.Graph[node+offset] = make(map[rune][]int)
 				}
-				if _, ok := n3.Graph[node+offset][color]; !ok {
-					n3.Graph[node+offset][color] = make([]int, 0)
+				if _, ok := n3.Graph[node+offset][character]; !ok {
+					n3.Graph[node+offset][character] = make([]int, 0)
 				}
-				n3.Graph[node+offset][color] = append(
-					n3.Graph[node+offset][color], neighbour+offset)
+				n3.Graph[node+offset][character] = append(
+					n3.Graph[node+offset][character], neighbour+offset)
 			}
 		}
 	}
@@ -91,16 +91,16 @@ func Either(n1 NFA, n2 NFA) (n3 NFA) {
 	}
 	n3.Graph = n1.Graph
 	for node, _ := range n2.Graph {
-		for color, _ := range n2.Graph[node] {
-			for _, neighbour := range n2.Graph[node][color] {
+		for character, _ := range n2.Graph[node] {
+			for _, neighbour := range n2.Graph[node][character] {
 				if _, ok := n3.Graph[node+offset]; !ok {
 					n3.Graph[node+offset] = make(map[rune][]int)
 				}
-				if _, ok := n3.Graph[node+offset][color]; !ok {
-					n3.Graph[node+offset][color] = make([]int, 0, 1)
+				if _, ok := n3.Graph[node+offset][character]; !ok {
+					n3.Graph[node+offset][character] = make([]int, 0, 1)
 				}
-				n3.Graph[node+offset][color] = append(
-					n3.Graph[node+offset][color], neighbour+offset)
+				n3.Graph[node+offset][character] = append(
+					n3.Graph[node+offset][character], neighbour+offset)
 			}
 		}
 	}
@@ -136,7 +136,6 @@ func Star(n1 NFA) (n2 NFA) {
 // Transforms an NFA into a DFA that accepts the same language; some
 // inaccessible states will be lost in the process
 func (n *NFA) ToDFA() dfa.DFA {
-
 	// first follow along λ-transitions to make them obsolete
 	is_final := make([]bool, n.NumStates+1)
 	for _, node := range n.FinalStates {
@@ -155,12 +154,12 @@ func (n *NFA) ToDFA() dfa.DFA {
 				is_final[i] = true
 				n.FinalStates = append(n.FinalStates, i)
 			}
-			for color, neighbours := range n.Graph[node] {
+			for character, neighbours := range n.Graph[node] {
 				for _, neighbour := range neighbours {
-					if color == 'λ' && !added[neighbour] {
+					if character == 'λ' && !added[neighbour] {
 						q.Push(neighbour)
 					}
-					n.Graph[i][color] = append(n.Graph[i][color], neighbour)
+					n.Graph[i][character] = append(n.Graph[i][character], neighbour)
 					n.NumTransitions++
 				}
 			}
@@ -198,12 +197,12 @@ func (n *NFA) ToDFA() dfa.DFA {
 			if _, ok := dfa[node_code]; !ok {
 				dfa[node_code] = make(map[rune]int)
 			}
-			for color, neighbours := range n.Graph[node] {
+			for character, neighbours := range n.Graph[node] {
 				for _, neighbour := range neighbours {
-					dfa[node_code][color] = dfa[node_code][color] | (1 << uint(neighbour-1))
-					if !visited[dfa[node_code][color]] {
-						q.Push(dfa[node_code][color])
-						visited[dfa[node_code][color]] = true
+					dfa[node_code][character] = dfa[node_code][character] | (1 << uint(neighbour-1))
+					if !visited[dfa[node_code][character]] {
+						q.Push(dfa[node_code][character])
+						visited[dfa[node_code][character]] = true
 					}
 				}
 			}
@@ -235,12 +234,12 @@ func (n *NFA) ToDFA() dfa.DFA {
 		}
 		n.Graph[mapping[i]] = make(map[rune][]int)
 		n.NumTransitions += len(dfa[i])
-		for color, node := range dfa[i] {
+		for character, node := range dfa[i] {
 			if _, ok := mapping[node]; !ok {
 				current_node++
 				mapping[node] = current_node
 			}
-			n.Graph[mapping[i]][color] = []int{mapping[node]}
+			n.Graph[mapping[i]][character] = []int{mapping[node]}
 		}
 	}
 	if _, ok := mapping[n.EntryState]; ok {

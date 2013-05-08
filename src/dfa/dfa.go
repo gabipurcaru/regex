@@ -140,8 +140,8 @@ func nodes_match(graph map[int]map[rune][]int, is_final []bool, node1, node2 int
 	if len(graph[node1]) != len(graph[node2]) {
 		return false
 	}
-	for color, neighbours := range graph[node1] {
-		if neighbours2, ok := graph[node2][color]; !ok || is_final[neighbours[0]] != is_final[neighbours2[0]] {
+	for character, neighbours := range graph[node1] {
+		if neighbours2, ok := graph[node2][character]; !ok || is_final[neighbours[0]] != is_final[neighbours2[0]] {
 			return false
 		}
 	}
@@ -226,7 +226,7 @@ func (d *DFA) Minimize() {
 						if _, ok := d.Graph[used][character]; !ok {
 							d.Graph[used][character] = make([]int, 1)
 						} else {
-							transitions_removed ++
+							transitions_removed++
 						}
 						d.Graph[used][character][0] = renames[nodes[0]]
 					}
@@ -240,9 +240,9 @@ func (d *DFA) Minimize() {
 	// Apply remaining renames
 	// TODO: improve the main algorithm so that it doesn't need this
 	for i := 1; i <= d.NumStates; i++ {
-		for color, _ := range d.Graph[i] {
-			for d.Graph[i][color][0] != renames[d.Graph[i][color][0]] {
-				d.Graph[i][color][0] = renames[d.Graph[i][color][0]]
+		for character, _ := range d.Graph[i] {
+			for d.Graph[i][character][0] != renames[d.Graph[i][character][0]] {
+				d.Graph[i][character][0] = renames[d.Graph[i][character][0]]
 			}
 		}
 	}
