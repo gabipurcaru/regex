@@ -15,13 +15,13 @@ Also, it doesn't rely on the `re` package.
 
 
 What's this all about
-=====================
+================
 
 If you want to learn about Finite Automata, this package should be hacking material.
 
 
 How do I use this
-=================
+==============
 
 `go run lfa.go` -- it will prompt you for a regular expression and a word to match against that expression.
 
@@ -29,3 +29,9 @@ It then prints whether the word matches or not, and also prints out the minimize
 characters on edges.
 
 You can use UTF-8 for the word/regex, though don't use the lambda character.
+
+Example regular expressions:
+
+    a*b
+    (a|b)*c
+    (word)*|anotherword
