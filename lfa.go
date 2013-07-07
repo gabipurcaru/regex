@@ -9,12 +9,15 @@ import (
 func main() {
 	var word string
 	var re string
+	fmt.Print("Give a regular expression: ")
 	fmt.Scanf("%s", &re)
+	fmt.Print("Give a word to match: ")
 	fmt.Scanf("%s", &word)
 	nfa := regex.RegexToNFA(re)
-	nfa.ToDFA()
-	nfa.Minimize()
-	fmt.Printf("%v", nfa.Check(word))
-	fmt.Printf("\n")
-	nfa.Print(os.Stdout)
+	dfa := nfa.ToDFA()
+	dfa.Minimize()
+	fmt.Printf("Matches? %v\n", dfa.Check(word))
+
+	fmt.Print("Minimized DFA for the regular expression: \n")
+	dfa.Print(os.Stdout)
 }

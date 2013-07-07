@@ -42,9 +42,9 @@ func TestNFAToDFA(t *testing.T) {
 	}
 	nfa := New()
 	nfa.Process(strings.NewReader(simple_nfa))
-	nfa.ToDFA()
+	dfa := nfa.ToDFA()
 	for str, res := range tests {
-		if nfa.Check(str) != res {
+		if dfa.Check(str) != res {
 			t.Fatalf("Wrong answer at: %s", str)
 		}
 	}
@@ -53,7 +53,6 @@ func TestNFAToDFA(t *testing.T) {
 func TestConcat(t *testing.T) {
 	nfa := New()
 	nfa.Process(strings.NewReader(simple_nfa))
-	nfa.ToDFA()
 
 	res := Concat(nfa, nfa)
 	// res.Print(os.Stdout)
@@ -69,7 +68,6 @@ func TestConcat(t *testing.T) {
 func TestEither(t *testing.T) {
 	nfa := New()
 	nfa.Process(strings.NewReader(simple_nfa))
-	nfa.ToDFA()
 
 	res := Either(nfa, nfa)
 	// res.Print(os.Stdout)
@@ -85,7 +83,6 @@ func TestEither(t *testing.T) {
 func TestStar(t *testing.T) {
 	nfa := New()
 	nfa.Process(strings.NewReader(simple_nfa))
-	nfa.ToDFA()
 
 	Star(nfa)
 }

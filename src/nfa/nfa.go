@@ -10,7 +10,7 @@ type NFA struct {
 }
 
 func New() NFA {
-	return NFA{dfa.NewDFA()}
+	return NFA{dfa.New()}
 }
 
 func Copy(n NFA) NFA {
@@ -135,7 +135,9 @@ func Star(n1 NFA) (n2 NFA) {
 
 // Transforms an NFA into a DFA that accepts the same language; some
 // inaccessible states will be lost in the process
-func (n *NFA) ToDFA() dfa.DFA {
+func (original_nfa *NFA) ToDFA() dfa.DFA {
+	nfa := Copy(*original_nfa)
+	n := &nfa
 	// first follow along λ-transitions to make them obsolete
 	is_final := make([]bool, n.NumStates+1)
 	for _, node := range n.FinalStates {
@@ -146,7 +148,6 @@ func (n *NFA) ToDFA() dfa.DFA {
 		added := make([]bool, n.NumStates+1)
 		for _, node := range n.Graph[i]['λ'] {
 			q.Push(node)
-			added[node] = true
 		}
 		for !q.Empty() {
 			node, _ := q.Pop()
@@ -158,6 +159,7 @@ func (n *NFA) ToDFA() dfa.DFA {
 				for _, neighbour := range neighbours {
 					if character == 'λ' && !added[neighbour] {
 						q.Push(neighbour)
+						added[neighbour] = true
 					}
 					n.Graph[i][character] = append(n.Graph[i][character], neighbour)
 					n.NumTransitions++
@@ -200,10 +202,12 @@ func (n *NFA) ToDFA() dfa.DFA {
 			for character, neighbours := range n.Graph[node] {
 				for _, neighbour := range neighbours {
 					dfa[node_code][character] = dfa[node_code][character] | (1 << uint(neighbour-1))
-					if !visited[dfa[node_code][character]] {
-						q.Push(dfa[node_code][character])
-						visited[dfa[node_code][character]] = true
-					}
+				}
+			}
+			for _, neighbour := range dfa[node_code] {
+				if !visited[neighbour] {
+					q.Push(neighbour)
+					visited[neighbour] = true
 				}
 			}
 		}

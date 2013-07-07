@@ -1,6 +1,7 @@
 package dfa
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -37,13 +38,13 @@ var (
 
 func BenchmarkDFAProcess(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		dfa := NewDFA()
+		dfa := New()
 		dfa.Process(strings.NewReader(simple_dfa))
 	}
 }
 
 func BenchmarkDFACheck(b *testing.B) {
-	dfa := NewDFA()
+	dfa := New()
 	dfa.Process(strings.NewReader(simple_dfa))
 	for i := 0; i < b.N; i++ {
 		if !dfa.Check("al") {
@@ -55,7 +56,7 @@ func BenchmarkDFACheck(b *testing.B) {
 func BenchmarkDFAMinimize(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		dfa := NewDFA()
+		dfa := New()
 		dfa.Process(strings.NewReader(complex_dfa))
 		b.StartTimer()
 		dfa.Minimize()
@@ -63,7 +64,7 @@ func BenchmarkDFAMinimize(b *testing.B) {
 }
 
 func TestDFACheck(t *testing.T) {
-	dfa := NewDFA()
+	dfa := New()
 	dfa.Process(strings.NewReader(simple_dfa))
 	tests := map[string]bool{
 		"lo":  true,
@@ -81,7 +82,7 @@ func TestDFACheck(t *testing.T) {
 }
 
 func TestDFAProcess(t *testing.T) {
-	dfa := NewDFA()
+	dfa := New()
 	dfa.Process(strings.NewReader(simple_dfa))
 	if dfa.EntryState != 1 {
 		t.Errorf("Incorrect first state: %d", dfa.EntryState)
@@ -101,7 +102,7 @@ func TestDFAProcess(t *testing.T) {
 }
 
 func TestDFAMinimize(t *testing.T) {
-	dfa := NewDFA()
+	dfa := New()
 	dfa.Process(strings.NewReader(complex_dfa))
 	dfa.Minimize()
 	tests := map[string]bool{
@@ -114,6 +115,7 @@ func TestDFAMinimize(t *testing.T) {
 		"0101":   false,
 	}
 	if dfa.NumStates != 5 {
+		dfa.Print(os.Stderr)
 		t.Fatalf("Wrong number of minimized states: %d", dfa.NumStates)
 	}
 	if dfa.NumTransitions != 10 {

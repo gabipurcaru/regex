@@ -24,9 +24,9 @@ type DFA struct {
 	Graph map[int]map[rune][]int
 }
 
-// NewDFA is an mpty constructor for a DFA. Returns a null DFA (zero states,
+// New is an mpty constructor for a DFA. Returns a null DFA (zero states,
 // zero transitions)
-func NewDFA() DFA {
+func New() DFA {
 	return DFA{0, 0, 0, make([]int, 0), make(map[int]map[rune][]int)}
 }
 
