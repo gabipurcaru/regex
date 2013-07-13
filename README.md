@@ -11,7 +11,7 @@ then into a [DFA](http://en.wikipedia.org/wiki/Deterministic_finite_automaton), 
 regular expression if it's recognized by the resulting DFA.
 
 The package is written in [golang](http://golang.org/) and it doesn't have any external dependencies.
-Also, it doesn't rely on the `re` package.
+Also, it doesn't rely on the `regexp` package.
 
 
 What's this all about
